@@ -11,7 +11,7 @@ app.use((req, res, next) => {
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-  ); // What methods are allowed you can choose whatever you want doesn't need to be all of them
+  ); // What HTTP methods are allowed you can choose whatever you want doesn't need to be all of them
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, connect-src"
