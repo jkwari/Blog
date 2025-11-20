@@ -1,20 +1,16 @@
 const { validationResult } = require("express-validator");
+const Post = require("../models/post");
 
 exports.getFeed = (req, res, next) => {
-  res.status(200).json({
-    posts: [
-      {
-        _id: "1",
-        title: "First Post",
-        content: "This is the first post",
-        imageUrl: "images\rdr2.jpg",
-        creator: {
-          name: "Jamal Eldeen Wari",
-        },
-        createdAt: new Date(),
-      },
-    ],
-  });
+  Post.find()
+    .then((result) => {
+      res.status(200).json({
+        posts: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 };
 
 exports.createPost = (req, res, next) => {
@@ -28,17 +24,24 @@ exports.createPost = (req, res, next) => {
   }
   const title = req.body.title;
   const content = req.body.content;
-
-  res.status(201).json({
-    message: "Post Added Successfully !!!",
-    post: {
-      _id: new Date().toISOString(),
-      title: title,
-      content: content,
-      creator: {
-        name: "Jamal Eldeen Wari", // this will be dynamic later not like this static
-      },
-      createdAt: new Date(),
+  // const imageUrl = req.body.imageUrl;
+  const post = new Post({
+    title: title,
+    content: content,
+    imageUrl: "images/rdr2.jpg",
+    creator: {
+      name: "Jamal Eldeen Wari",
     },
   });
+  post
+    .save()
+    .then((result) => {
+      res.status(201).json({
+        message: "Post Added Successfully !!!",
+        post: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 };

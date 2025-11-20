@@ -1,10 +1,15 @@
+const path = require("path");
 const express = require("express");
 const feedRoute = require("./routes/feed");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
 const app = express();
 
 app.use(bodyParser.json()); // used for contentType: Application/JSON
+
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*"); // Who can access our server * means all Clients
@@ -22,4 +27,12 @@ app.use((req, res, next) => {
 // all the routes for feedRoute will start with /feed
 app.use("/feed", feedRoute);
 
-app.listen(8080);
+mongoose
+  .connect(process.env.MONGODB_URL)
+  .then(() => {
+    console.log("Connected");
+    app.listen(8080);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
