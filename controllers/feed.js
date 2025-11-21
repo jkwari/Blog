@@ -1,3 +1,4 @@
+const path = require("path");
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 
@@ -24,11 +25,11 @@ exports.createPost = (req, res, next) => {
   }
   const title = req.body.title;
   const content = req.body.content;
-  // const imageUrl = req.body.imageUrl;
+  const imageUrl = req.file.path;
   const post = new Post({
     title: title,
     content: content,
-    imageUrl: "images/rdr2.jpg",
+    imageUrl: imageUrl,
     creator: {
       name: "Jamal Eldeen Wari",
     },
@@ -38,6 +39,25 @@ exports.createPost = (req, res, next) => {
     .then((result) => {
       res.status(201).json({
         message: "Post Added Successfully !!!",
+        post: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+exports.getPost = (req, res, next) => {
+  // we want to extract the post ID from the url
+
+  const postId = req.params.postId;
+
+  // Now after getting the ID from the URL we can get the post by its ID
+
+  Post.findById(postId)
+    .then((result) => {
+      res.status(200).json({
+        message: `Post with ID ${postId} is found in the database`,
         post: result,
       });
     })
