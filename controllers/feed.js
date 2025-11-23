@@ -4,14 +4,40 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 
 exports.getFeed = (req, res, next) => {
+  // This currentPage Var is getting the page count from the frontend because i am passing it
+  // as a query parameter. And this || 1 it check if req.query.page if it is null then set it
+  // by default to 1 not null
+  const currentPage = req.query.page || 1;
+
+  // Number of posts per page we set it to two to align with the frontend
+  const perPage = 2;
+  // This variable will keep count of the number of posts in the database
+  let totalItems;
+
   Post.find()
-    .then((result) => {
+    .countDocuments()
+    .then((count) => {
+      // After running countDocuments() we will have the number of posts in the Database
+      totalItems = count;
+
+      return (
+        Post.find()
+          // Here is the pagination logic
+          .skip((currentPage - 1) * perPage)
+          .limit(perPage)
+      );
+    })
+    .then((posts) => {
       res.status(200).json({
-        posts: result,
+        posts: posts,
+        totalItems: totalItems,
       });
     })
+
     .catch((error) => {
-      console.log(error);
+      if (!error.statusCode) {
+        error.statusCode = 500;
+      }
     });
 };
 
@@ -129,6 +155,29 @@ exports.updatePost = (req, res, next) => {
     .catch((error) => {
       if (!error.statusCode) {
         // 500 means that there is a problem with the server side
+        error.statusCode = 500;
+      }
+    });
+};
+
+exports.deletePost = (req, res, next) => {
+  id = req.params.postId;
+  Post.findById(id)
+    .then((post) => {
+      if (!post) {
+        const error = new Error("No Post is found");
+        error.statusCode = 404;
+        throw error;
+      }
+      clearImage(post.imageUrl);
+      return Post.findByIdAndDelete(id);
+    })
+    .then((result) => {
+      console.log(result);
+      res.status(200).json({ message: "Deleted Successfully" });
+    })
+    .catch((error) => {
+      if (!error.statusCode) {
         error.statusCode = 500;
       }
     });

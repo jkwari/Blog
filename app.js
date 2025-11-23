@@ -1,6 +1,7 @@
 const path = require("path");
 const express = require("express");
 const feedRoute = require("./routes/feed");
+const authRouter = require("./routes/auth");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 require("dotenv").config();
@@ -54,6 +55,7 @@ app.use((req, res, next) => {
 
 // all the routes for feedRoute will start with /feed
 app.use("/feed", feedRoute);
+app.use("/auth", authRouter);
 
 mongoose
   .connect(process.env.MONGODB_URL)
