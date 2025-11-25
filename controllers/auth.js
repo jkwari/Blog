@@ -78,7 +78,7 @@ exports.login = (req, res, next) => {
         email: loadedUser.email,
         userId: loadedUser._id.toString(),
       };
-
+      //  jwt.sign here we are creating the signature using payload, and the secret
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "1h", // We don't want the token always available for security purposes after one hour the token will be expired
       });

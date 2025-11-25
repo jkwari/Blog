@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs"); // this is the file system
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
+const User = require("../models/user");
 
 exports.getFeed = (req, res, next) => {
   // This currentPage Var is getting the page count from the frontend because i am passing it
@@ -50,6 +51,10 @@ exports.createPost = (req, res, next) => {
       errors: errors.array(),
     });
   }
+  // Let's retreive the User ID from the request we did in isAuth File
+
+  const userId = req.userId;
+  let creator;
   const title = req.body.title;
   const content = req.body.content;
   const imageUrl = req.file.path;
@@ -57,16 +62,28 @@ exports.createPost = (req, res, next) => {
     title: title,
     content: content,
     imageUrl: imageUrl,
-    creator: {
-      name: "Jamal Eldeen Wari",
-    },
+    creator: userId,
   });
   post
     .save()
+    .then(() => {
+      // Once we saved the post we need to find the user we want to save the post to
+      return User.findById(userId);
+    })
+    .then((user) => {
+      // User model does have "posts" property we want to store our new post to that posts array
+      user.posts.push(post);
+      creator = user;
+      return user.save();
+    })
     .then((result) => {
       res.status(201).json({
-        message: "Post Added Successfully !!!",
-        post: result,
+        message: "Post added successfully by " + creator.name,
+        post: post,
+        creator: {
+          _id: creator._id,
+          email: creator.email,
+        },
       });
     })
     .catch((error) => {
