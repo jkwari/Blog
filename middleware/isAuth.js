@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 module.exports = (req, res, next) => {
   // First we need to check if we got the header before spliting it
   const authHeader = req.get("Authorization");
+  // console.log(authHeader);
+
   if (!authHeader) {
     const error = new Error("Not Authenticated !!!");
     error.statusCode = 401;
@@ -28,5 +30,6 @@ module.exports = (req, res, next) => {
   }
   // If token is decoded successfully then we want to extract the userId from it and store it in the request
   req.userId = decodedToken.userId;
+  req.name = decodedToken.name;
   next();
 };

@@ -15,14 +15,15 @@ exports.getFeed = (req, res, next) => {
   // This variable will keep count of the number of posts in the database
   let totalItems;
 
-  Post.find()
-    .countDocuments()
+  const userId = req.userId;
+
+  Post.countDocuments({ "creator._id": userId })
     .then((count) => {
       // After running countDocuments() we will have the number of posts in the Database
       totalItems = count;
 
       return (
-        Post.find()
+        Post.find({ "creator._id": userId })
           // Here is the pagination logic
           .skip((currentPage - 1) * perPage)
           .limit(perPage)
@@ -58,11 +59,16 @@ exports.createPost = (req, res, next) => {
   const title = req.body.title;
   const content = req.body.content;
   const imageUrl = req.file.path;
+  console.log(req.name);
+
   const post = new Post({
     title: title,
     content: content,
     imageUrl: imageUrl,
-    creator: userId,
+    creator: {
+      _id: userId,
+      name: req.name,
+    },
   });
   post
     .save()
@@ -189,9 +195,57 @@ exports.deletePost = (req, res, next) => {
       clearImage(post.imageUrl);
       return Post.findByIdAndDelete(id);
     })
+    .then(() => {
+      return User.findById(req.userId);
+    })
+    .then((user) => {
+      user.posts.pull(id);
+      return user.save();
+    })
     .then((result) => {
       console.log(result);
       res.status(200).json({ message: "Deleted Successfully" });
+    })
+    .catch((error) => {
+      if (!error.statusCode) {
+        error.statusCode = 500;
+      }
+    });
+};
+
+exports.getStatus = (req, res, next) => {
+  // We need to fetch the user status from the database
+
+  User.findById({ _id: req.userId })
+    .then((user) => {
+      const status = user.status;
+      res.status(200).json({
+        message: "Status fetched from DB",
+        status: status,
+      });
+    })
+    .catch((error) => {
+      if (!error.statusCode) {
+        error.statusCode = 500;
+      }
+    });
+};
+
+exports.updateStatus = (req, res, next) => {
+  // We need to get the new status from the update body
+  console.log(req.body.status);
+
+  const newStatus = req.body.status;
+  const userId = req.userId;
+  User.findById({ _id: userId })
+    .then((user) => {
+      user.status = newStatus;
+      return user.save();
+    })
+    .then((result) => {
+      res.status.json({
+        message: "Status Updated",
+      });
     })
     .catch((error) => {
       if (!error.statusCode) {

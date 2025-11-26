@@ -77,6 +77,7 @@ exports.login = (req, res, next) => {
       const payload = {
         email: loadedUser.email,
         userId: loadedUser._id.toString(),
+        name: loadedUser.name,
       };
       //  jwt.sign here we are creating the signature using payload, and the secret
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
